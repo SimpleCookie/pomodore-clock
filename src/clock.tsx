@@ -11,7 +11,7 @@ const initialState = {
 const Clock = ({audioRef}: any) => {
   const [state, setState] = useState({
     ...initialState,
-    time: initialState.sessionLength * 60
+    timeInSeconds: initialState.sessionLength * 60
   })
   let stopwatch: any
 
@@ -19,7 +19,7 @@ const Clock = ({audioRef}: any) => {
     if (!state.isRunning && state.sessionLength < 60) {
       setState({
         ...state,
-        time: (state.sessionLength+1) * 60,
+        timeInSeconds: (state.sessionLength+1) * 60,
         sessionLength: state.sessionLength+1,
       })
     }
@@ -28,7 +28,7 @@ const Clock = ({audioRef}: any) => {
     if (!state.isRunning && state.sessionLength > 1) {
       setState({
         ...state,
-        time: (state.sessionLength-1) * 60,
+        timeInSeconds: (state.sessionLength-1) * 60,
         sessionLength: state.sessionLength-1,
       })
     }
@@ -61,24 +61,24 @@ const Clock = ({audioRef}: any) => {
   useEffect(() => {
     if (state.isRunning) {
       stopwatch = setInterval(() => {
-        if (state.time === 0) {
+        if (state.timeInSeconds === 0) {
           const isBreak = !state.isBreak
           const newMinutes = isBreak ? state.breakLength : state.sessionLength
           setState({
             ...state,
             isBreak,
-            time: newMinutes * 60,
+            timeInSeconds: newMinutes * 60,
           })
           return () => clearInterval(stopwatch)
         }
 
-        const newTime = state.time - 1
+        const newTime = state.timeInSeconds - 1
         newTime === 0 && audioRef.play()
-        setState({ ...state, time: newTime })
+        setState({ ...state, timeInSeconds: newTime })
       }, intervalTimeInMs)
     }
     return () => clearInterval(stopwatch)
-  }, [state.time, state.isRunning])
+  }, [state.timeInSeconds, state.isRunning])
 
   const startTimer = () => {
     setState({ ...state, isRunning: true})
@@ -98,7 +98,7 @@ const Clock = ({audioRef}: any) => {
 
     setState({
       ...initialState,
-      time: initialState.sessionLength * 60
+      timeInSeconds: initialState.sessionLength * 60
     })
   }
 
@@ -115,7 +115,7 @@ const Clock = ({audioRef}: any) => {
       <br />
       <h3>Session</h3>
       <div id="timer-label">{state.isBreak ? "Break" : "Session"}</div>
-      <div id="time-left">{formatTime(state.time)}</div>
+      <div id="time-left">{formatTime(state.timeInSeconds)}</div>
       <br />
       <div id="session-label">Session Length</div>
       <div id="session-length">{state.sessionLength}</div>
