@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import moment from 'moment'
 
-const timeFormat = "mm:ss"
 const intervalTimeInMs = 1000
 const initialState = {
   breakLength: 5,
@@ -13,7 +11,7 @@ const initialState = {
 const Clock = ({audioRef}: any) => {
   const [state, setState] = useState({
     ...initialState,
-    time: `${initialState.sessionLength > 9 ? initialState.sessionLength : "0"+initialState.sessionLength}:00`
+    time: initialState.sessionLength * 60
   })
   let stopwatch: any
 
@@ -21,7 +19,7 @@ const Clock = ({audioRef}: any) => {
     if (!state.isRunning && state.sessionLength < 60) {
       setState({
         ...state,
-        time: getTimeFromMinute(state.sessionLength+1),
+        time: (state.sessionLength+1) * 60,
         sessionLength: state.sessionLength+1,
       })
     }
@@ -30,7 +28,7 @@ const Clock = ({audioRef}: any) => {
     if (!state.isRunning && state.sessionLength > 1) {
       setState({
         ...state,
-        time: getTimeFromMinute(state.sessionLength-1),
+        time: (state.sessionLength-1) * 60,
         sessionLength: state.sessionLength-1,
       })
     }
@@ -63,26 +61,19 @@ const Clock = ({audioRef}: any) => {
   useEffect(() => {
     if (state.isRunning) {
       stopwatch = setInterval(() => {
-        if (state.time === "00:00") {
+        if (state.time === 0) {
           const isBreak = !state.isBreak
           const newMinutes = isBreak ? state.breakLength : state.sessionLength
           setState({
             ...state,
             isBreak,
-            time: getTimeFromMinute(newMinutes),
+            time: newMinutes * 60,
           })
           return () => clearInterval(stopwatch)
         }
-        const minutes = state.time.substr(0, 2)
-        const seconds = state.time.substr(3, 2)
-        const timeNow = moment().utcOffset(0).set({
-          hour: 0,
-          minute: parseInt(minutes),
-          second: parseInt(seconds),
-          millisecond: 0,
-        })
-        const newTime = timeNow.subtract(1, "second").format(timeFormat)
-        newTime === "00:00" && audioRef.play()
+
+        const newTime = state.time - 1
+        newTime === 0 && audioRef.play()
         setState({ ...state, time: newTime })
       }, intervalTimeInMs)
     }
@@ -107,12 +98,14 @@ const Clock = ({audioRef}: any) => {
 
     setState({
       ...initialState,
-      time: getTimeFromMinute(initialState.sessionLength)
+      time: initialState.sessionLength * 60
     })
   }
 
-  const getTimeFromMinute = (minute: number) => {
-    return minute > 9 ? `${minute}:00` : `0${minute}:00`
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds/60)
+    const seconds = timeInSeconds%60
+    return `${minutes > 9 ? minutes : "0"+minutes}:${seconds > 9 ? seconds : "0"+seconds}`
   }
 
   return (
@@ -122,7 +115,7 @@ const Clock = ({audioRef}: any) => {
       <br />
       <h3>Session</h3>
       <div id="timer-label">{state.isBreak ? "Break" : "Session"}</div>
-      <div id="time-left">{state.time}</div>
+      <div id="time-left">{formatTime(state.time)}</div>
       <br />
       <div id="session-label">Session Length</div>
       <div id="session-length">{state.sessionLength}</div>
