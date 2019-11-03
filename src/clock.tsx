@@ -63,10 +63,8 @@ const Clock = ({audioRef}: any) => {
   useEffect(() => {
     if (state.isRunning) {
       stopwatch = setInterval(() => {
-        console.log(state.time)
         if (state.time === "00:00") {
           const isBreak = !state.isBreak
-          console.log('switching to ' + isBreak ? "break" : "session")
           const newMinutes = isBreak ? state.breakLength : state.sessionLength
           setState({
             ...state,
